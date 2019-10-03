@@ -2,27 +2,39 @@
 ############################################################################
 ############################################################################
 ## REGISTRO DESTE ARQUIVO
-#### Versão: 1.1
+#### Versão: 2.0
 ##### Observações: nenhuma
 ###### Problemas a corrigir: nenhum
-####### Data e hora da modificação: 01/10 14:00h
-######## Ultima pessoa a modificar:	Levi
+####### Data e hora da modificação: 03/10 14:00h
+######## Ultima pessoa a modificar: Levi
 ############################################################################
 ############################################################################
 */
 
-#include <iostream>
+#include <stdio.h>
 #include <stdlib.h>
+#include <termios.h>
+#include <unistd.h>
+#include <iostream>
 #include <string.h>
+#include <string.h>
+#include "structs.h"
 using namespace std;
 
 #include "structs.h"
 #include "bmoretree.h"
 #include "file.h"
 
+
+#include "menu.h"
+
+
+
 int main () {
+   cout << "hhahahahaha" << endl;
+   
     cout << "fucaaa\n";   
-    BMTREE * r = new BMTREE();
+    BMTREE * r = BMTREE::getInstance();
     r->DataBase->showHeadTree();
     r->DataBase->showHeadFile();
     book a;
@@ -64,7 +76,22 @@ int main () {
     r->insert(a);
 	a.key = 32;
     r->insert(a);   
+    a.key = 55;
+    r->insert(a); 
+    
     
     r->show();
+
+    cout << "\n\n\n\n";
+
+    r->printKeys();
+
+    cout << "\n\n\n";
+
+    //r->printBooks();
+    
+
     return 0;
+    
+    
 }
