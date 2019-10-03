@@ -228,6 +228,13 @@ public:
 	*/
 	void updateFather(Bmore aux);
 
+	/*
+	## Carrega dados do arquivo txt
+	Pré-condição:   arquivo existente, aquivo binario inicializado
+	Pós-condição:   dados carregados em arquivo binario
+	*/
+	int insertViaFile(char * _file);
+
 };
 
 

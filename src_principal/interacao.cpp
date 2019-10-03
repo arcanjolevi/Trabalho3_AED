@@ -19,7 +19,15 @@ Pré-condição:	nenhuma
 Pós-condição:	nennhuma
 */
 void carregarArquivo(){
+	BMTREE * r = BMTREE::getInstance();
 	notificacao("Carregar Arquivo");
+	char local[200];
+	strcpy(local, lertexto("Insira o nome do arquivo:").c_str());	
+
+	if(r->insertViaFile(local))
+		notificacao("Arquivo Inserido com sucesso");
+	else
+		notificacao("Nao foi possivel Inserir");
 }
 
 /*
@@ -51,7 +59,8 @@ void atualizarExemplares(){
 	int numero = lerinteiro("Insira o novo numero de exemplares");
 	if(!r->updateNumberofBooks(chave, numero))
 		notificacao("Impossivel Atualizar");
-	pausa();
+	else
+		notificacao("Atualizado com Sucesso");
 }
 
 /*
@@ -87,7 +96,7 @@ Pré-condição:	nenhuma
 Pós-condição:	nenhuma
 */
 void imprimirAcervo(){
-	notificacao("imprimir Acervo");
+	notificacao("Imprimir Acervo");
 	BMTREE * r = BMTREE::getInstance();
 	r->printBooks();
 	pausa();

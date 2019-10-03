@@ -580,3 +580,34 @@ void BMTREE::printOneBook(book l){
     cout << "                                            \u258C";
     cout << "N de Exemplares: " << l.nExamples << endl << endl;
 }
+
+
+/*
+## Carrega dados do arquivo txt
+Pré-condição:   arquivo existente, aquivo binario inicializado
+Pós-condição:   dados carregados em arquivo binario
+*/
+int BMTREE::insertViaFile(char * _file){
+    FILE * f = fopen(_file, "r");
+    if(f == NULL)return 0;
+    int chave;
+    char temp[300];
+    book  l;
+
+    while(!feof(f)){
+        fscanf(f, "%d%*c", &l.key);
+        //printf("%d;", chave);
+        fscanf(f,"%[^;]%*c", l.title);
+        //printf("%s;", temp);
+        fscanf(f,"%[^;]%*c", l.author);
+        //printf("%s;", temp);
+        fscanf(f, "%d%*r", &l.nExamples);
+        //printf("%d\n", chave);
+        l.myPos = -1;
+        this->insert(l);
+    }    
+    fclose(f);
+    return 1;
+
+
+}
