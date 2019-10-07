@@ -69,9 +69,12 @@ Pré-condição:	nenhuma
 Pós-condição:	nenhuma
 */
 void removerLivro(){
+	BMTREE * r = BMTREE::getInstance();
 	notificacao("Remover Livro");
 	int chave = lerinteiro("Insira a chave do livro");
-	//Remover livro
+	r->deleteKey(chave);
+	notificacao("Livro Removido");
+
 }
 
 /*

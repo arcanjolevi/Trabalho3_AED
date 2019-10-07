@@ -80,6 +80,13 @@ public:
 	void adicionaNaDireita(int pos, Key info, int filho);
 
 	/*
+	## Adiciona uma key a direita de um nó não folha
+	Pré-condição:	arquivo iniciado
+	Pós-condição:	chave inserida no nó
+	*/
+	void adicionaNaDireita(int pos, Key info);
+
+	/*
 	## Adicona chave a direita de um nó, insere dados do livro no arquivo
 	Pré-condição:	arquivos iniciados
 	Pós-condição:	chave adiciona no nó, arquivo de dados alterado
@@ -234,6 +241,85 @@ public:
 	Pós-condição:   dados carregados em arquivo binario
 	*/
 	int insertViaFile(char * _file);
+
+
+
+	/*
+	## Deleta uma chave na folah
+	Pré-condição:   no carregado em this->tree
+	Pós-condição:   chave removida, caso exista
+	*/
+	void delete_folha(int key);
+
+	/*
+	## atuliza raiz do cabeçalho
+	Pré-condição:   nenhuma
+	Pós-condição:   nenhuma
+	*/
+	void updateRoot(int pos);
+
+	/*
+	## Retorna a menor chave da arvore
+	Pré-condição:   arvore nao nula
+	Pós-condição:   nenhuma
+	*/
+	Key smaller(int pos);
+
+	/*
+	## Atualiza todos os índices de um nó 
+	Pré-condição:   nenhuma 
+	Pós-condição:   nenhuma
+	*/
+	void updateIndex();
+
+	/*
+	## Função PRINCIPAL paradeletar uma chave da arvore
+	Pré-condição:   nenhuma
+	Pós-condição:   chave eliminada,caso exista 
+	*/
+	void deleteKey(int key);
+
+	/*
+	## Retorna a posicao do filho em que deve-se remover uma chave
+	Pré-condição:   nenhuma
+	Pós-condição:   nenhume
+	*/
+	int newSearch(int key);
+
+	/*
+	## Faz emprestimos com irmao de uma folha
+	Pré-condição:   folha con underflow
+	Pós-condição:   qtd minima respeitada na folha
+	*/
+	int emprestaFolha(int paiPos, int pos);
+
+	/*
+	## Faz merge em nó folha
+	Pré-condição:   folha com underflow
+	Pós-condição:   irmao e pai modificado
+	*/
+	void mergeFolha(int paiPos, int pos);
+
+	/*
+	## Fazz merge em no
+	Pré-condição:   filho com underflow
+	Pós-condição:   nenhuma
+	*/
+	void mergeNo(int paiPos, int pos);
+
+	/*
+	## Faz rotação em nó de indice
+	Pré-condição:   filho em pos com underflow
+	Pós-condição:   nenhuma
+	*/
+	int rotation(int paiPos, int pos);
+
+	/*
+	## Remove chaves que nao estejam na raiz
+	Pré-condição:   no nao vazio
+	Pós-condição:   nenhuma
+	*/
+	void delete_aux(int pos, int key);
 
 };
 

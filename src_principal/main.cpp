@@ -26,12 +26,97 @@
 
 using namespace std;
 
-
-
-
-
 int main () {
     BMTREE * r = BMTREE::getInstance();
-    menu();
+   	menu();
+
+
+
+
+
+
+/*
+
+
+
+
+
+    book a;
+    strcpy(a.title, "tit");
+    strcpy(a.author, "asdasd");
+    a.nExamples = 0;
+    a.myPos = -1;
+
+    a.key = 10;
+    r->insert(a);
+
+    a.key = 20;
+    r->insert(a);
+
+    a.key = 30;
+    r->insert(a);
+
+    a.key = 40;
+    r->insert(a);
+
+    a.key = 50;
+    r->insert(a);
+
+    a.key = 60;
+    r->insert(a);
+
+    a.key = 70;
+    r->insert(a);
+
+    a.key = 80;
+    r->insert(a);
+
+    a.key = 90;
+    r->insert(a);
+
+    a.key = 100;
+    r->insert(a);
+
+    a.key = 110;
+    r->insert(a);
+
+    a.key = 120;
+    r->insert(a);
+
+    a.key = 130;
+    r->insert(a);
+
+    a.key = 11;
+    r->insert(a);
+
+    a.key = 12;
+    r->insert(a);
+
+    a.key = 13;
+    r->insert(a);
+
+ 	r->deleteKey(130);
+ 	r->deleteKey(12);
+  	r->deleteKey(10);
+  	r->deleteKey(11);
+
+
+a.key = 130;
+    r->insert(a);
+    a.key = 150;
+    r->insert(a);
+    a.key = 160;
+    r->insert(a);
+    r->imprimearvore();
+    cout << "funca" << endl;
+  	r->deleteKey(13);
+    r->imprimearvore();
+
+    cout << endl;
+
+    r->printKeys();
+
+*/
+    
     return 0;    
 }

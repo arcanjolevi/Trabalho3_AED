@@ -86,6 +86,8 @@ int BMTREE::splitfolha(Key * m, int pai){
     }
     aux.filhos[ORDEM] = newPos;
     this->tree.filhos[ORDEM] = irmao;
+    this->tree.eh_folha = 1;
+    aux.eh_folha = 1;
     this->DataBase->setBMoreTree(this->tree);
     this->tree = aux;
     //this->tree.filhos[q] = newPos;
@@ -161,6 +163,20 @@ void BMTREE::adicionaNaDireita(int pos, Key info, int filho){
 }
 
 /*
+## Adiciona uma key a direita de um nó não folha
+Pré-condição:   arquivo iniciado
+Pós-condição:   chave inserida no nó
+*/
+void BMTREE::adicionaNaDireita(int pos, Key info){
+    int i; 
+    for(i = this->tree.numchaves;i>pos;i--){
+        this->tree.chaves[i] = this->tree.chaves[i-1];
+    }
+    this->tree.chaves[pos] = info;
+    this->tree.numchaves++;
+}
+
+/*
 ## Adicona chave a direita de um nó folha, insere dados do livro no arquivo
 Pré-condição:	arquivos iniciados
 Pós-condição:	chave adiciona no nó, arquivo de dados alterado
@@ -175,6 +191,8 @@ void BMTREE::adicionaNaDireita(int pos, book info, int filho){
     this->tree.chaves[pos].pos = this->DataBase->setBookData(info);
     this->tree.numchaves++;    
 }
+
+
 
 
 /*
@@ -373,15 +391,16 @@ void BMTREE::Debug(Bmore a){
     int i;
     
     cout << "[" ;
+
     
     cout << "myPos: " << a.myPos << " ";
     cout << "Pai: " << a.pai << " ";
 
-    /*
+    
     cout << " " << "Filhos: [";    
     for(i = 0;i<= ORDEM;i++)
             cout << " " << a.filhos[i] << " ";
-    */
+    
     cout << "]  Chaves: ";
     for(i = 0; i < a.numchaves;i++){
         cout << a.chaves[i].id;
@@ -596,13 +615,9 @@ int BMTREE::insertViaFile(char * _file){
 
     while(!feof(f)){
         fscanf(f, "%d%*c", &l.key);
-        //printf("%d;", chave);
         fscanf(f,"%[^;]%*c", l.title);
-        //printf("%s;", temp);
         fscanf(f,"%[^;]%*c", l.author);
-        //printf("%s;", temp);
         fscanf(f, "%d%*r", &l.nExamples);
-        //printf("%d\n", chave);
         l.myPos = -1;
         this->insert(l);
     }    
@@ -610,4 +625,381 @@ int BMTREE::insertViaFile(char * _file){
     return 1;
 
 
+}
+
+
+/*
+## Deleta uma chave na folah
+Pré-condição:   no carregado em this->tree
+Pós-condição:   chave removida, caso exista
+*/
+void BMTREE::delete_folha(int key){
+    int pos;
+    if(buscaPos(key, &pos)){
+        int i;
+        this->DataBase->freeThisBook(this->tree.chaves[pos].pos);
+        for(i = pos;i < this->tree.numchaves;i++){
+            this->tree.chaves[i] = this->tree.chaves[i+1];
+        }
+        this->tree.numchaves--;
+
+    }
+}
+
+
+/*
+## atuliza raiz do cabeçalho
+Pré-condição:   nenhuma
+Pós-condição:   nenhuma
+*/
+void BMTREE::updateRoot(int pos){
+    headtree aux = this->DataBase->getHeadTree();
+    aux.root = pos;
+    this->DataBase->setHeadTree(aux);
+}
+
+
+
+/*
+## Retorna a menor chave da arvore
+Pré-condição:   arvore nao nula
+Pós-condição:   nenhuma
+*/
+Key BMTREE::smaller(int pos){
+    Bmore aux = this->DataBase->getBMoreTree(pos);
+    while(aux.filhos[0] != -1){
+        aux = this->DataBase->getBMoreTree(aux.filhos[0]);
+    }
+    return aux.chaves[0];
+}
+
+/*
+## Atualiza todos os índices de um nó 
+Pré-condição:   nenhuma 
+Pós-condição:   nenhuma
+*/
+void BMTREE::updateIndex(){
+    int i;
+    for(i = 0;i < this->tree.numchaves;i++){
+        this->tree.chaves[i] = smaller(this->tree.filhos[i+1]);
+    }
+}
+
+
+/*
+## Função principal paradeletar uma chave da arvore
+Pré-condição:   nenhuma
+Pós-condição:   chave eliminada,caso exista 
+*/
+void BMTREE::deleteKey(int key){
+    int root = this->DataBase->getHeadTree().root;
+    if(root != -1){
+        this->tree = this->DataBase->getBMoreTree(root);
+        if(eh_folha(this->tree)){
+            delete_folha(key);
+            if(this->tree.numchaves == 0)
+                this->DataBase->clearAll();
+            else
+                this->DataBase->setBMoreTree(this->tree);
+
+        }else{
+            this->delete_aux(root, key);
+            this->tree = this->DataBase->getBMoreTree(root);
+            if(this->tree.numchaves == 0){
+                this->DataBase->freeThisTree(this->tree.myPos);
+                this->tree = this->DataBase->getBMoreTree(this->tree.filhos[0]);
+                updateIndex();
+                this->DataBase->setBMoreTree(this->tree);
+                updateRoot(this->tree.myPos);
+            }
+        }        
+
+    }
+}
+
+
+/*
+## Retorna a posicao do filho em que deve-se remover uma chave
+Pré-condição:   nenhuma
+Pós-condição:   nenhume
+*/
+int BMTREE::newSearch(int key){
+    int i;
+    for(i = 0;i < this->tree.numchaves;i++){
+        if(key < this->tree.chaves[i].id)
+            break;
+    }
+    return i;
+}
+
+
+/*
+## Faz merge em nó folha
+Pré-condição:   folha com underflow
+Pós-condição:   irmao e pai modificado
+*/
+void BMTREE::mergeFolha(int paiPos, int pos){
+    int irmao;
+    
+    Bmore esquerda, pai, direita;
+    pai = this->DataBase->getBMoreTree(paiPos);
+
+    if(pos > 0){
+        esquerda = this->DataBase->getBMoreTree(pai.filhos[pos-1]);
+        direita = this->DataBase->getBMoreTree(pai.filhos[pos]);
+    }
+    else{
+        esquerda = this->DataBase->getBMoreTree(pai.filhos[pos]);
+        direita = this->DataBase->getBMoreTree(pai.filhos[pos+1]);
+        pos++;
+    }
+
+    irmao = direita.filhos[ORDEM];
+    int i;
+    this->tree = esquerda;
+    for(i = 0; direita.numchaves > 0;i++){
+        adicionaNaDireita(this->tree.numchaves, direita.chaves[i],  NULL); 
+        direita.numchaves--;  
+    }
+    for(i = pos;i < pai.numchaves;i++){
+        pai.filhos[i] = pai.filhos[i+1];
+    }
+    pai.numchaves--;
+
+    this->tree.filhos[ORDEM] = irmao;
+    this->DataBase->setBMoreTree(this->tree);//esquerda
+    this->DataBase->setBMoreTree(pai);//pai
+    this->DataBase->setBMoreTree(direita);//direita
+    this->DataBase->freeThisTree(direita.myPos);
+
+}
+
+
+/*
+## Fazz merge em no
+Pré-condição:   filho com underflow
+Pós-condição:   nenhuma
+*/
+void BMTREE::mergeNo(int paiPos, int pos){
+    
+    Bmore esquerda, pai, direita;
+
+    pai = this->DataBase->getBMoreTree(paiPos);
+
+    if(pos > 0){
+        direita = this->DataBase->getBMoreTree(pai.filhos[pos]);
+        esquerda = this->DataBase->getBMoreTree(pai.filhos[pos - 1]);
+    }else{
+        direita = this->DataBase->getBMoreTree(pai.filhos[pos + 1]);
+        esquerda = this->DataBase->getBMoreTree(pai.filhos[pos]);
+    }
+
+    if(pos > 0){
+        this->tree = esquerda;
+        adicionaNaDireita(this->tree.numchaves, pai.chaves[pos - 1], -1);
+        esquerda = this->tree;
+
+        this->tree = pai;
+        delete_folha(pai.chaves[pos - 1].id);
+        pai = this->tree;
+
+        int i;
+        for(i = pos; i < pai.numchaves;i++)
+            pai.filhos[i] = pai.filhos[i+1];
+        
+        this->DataBase->setBMoreTree(pai);//grava o pai
+
+        for(i = 0;i < direita.numchaves;i++){
+            esquerda.chaves[esquerda.numchaves] = direita.chaves[i];
+            esquerda.filhos[esquerda.numchaves] = direita.filhos[i];
+            esquerda.numchaves++;
+        }
+        esquerda.filhos[esquerda.numchaves] = direita.filhos[i];
+
+        this->DataBase->setBMoreTree(esquerda);//esquerda
+        this->DataBase->setBMoreTree(direita);//direita
+    }else{
+        this->tree =  esquerda;
+        adicionaNaDireita(this->tree.numchaves, pai.chaves[pos], direita.filhos[0]);
+        esquerda = this->tree;
+
+        this->tree = pai;
+        delete_folha(pai.chaves[pos].id);
+        pai = this->tree;
+
+        int i;
+        for(i = pos+1;i < pai.numchaves;i++)
+            pai.filhos[i] = pai.filhos[i+1];
+
+        this->DataBase->setBMoreTree(pai);//grava o pai
+
+        for(i = 0;i < direita.numchaves;i++){
+            esquerda.chaves[esquerda.numchaves] = direita.chaves[i];
+            esquerda.filhos[esquerda.numchaves] = direita.filhos[i];
+            esquerda.numchaves++;
+        }
+        esquerda.filhos[esquerda.numchaves] = direita.filhos[i];
+
+        this->DataBase->setBMoreTree(esquerda);//grava esquerda
+        this->DataBase->setBMoreTree(direita);//grava direita
+    }
+
+}
+
+/*
+## Faz rotação em nó de indice
+Pré-condição:   filho em pos com underflow
+Pós-condição:   nenhuma
+*/
+int BMTREE::rotation(int paiPos, int pos){
+
+    Bmore esquerda, pai, direita, meio;
+    pai = this->DataBase->getBMoreTree(paiPos);
+    meio = this->DataBase->getBMoreTree(pai.filhos[pos]);
+
+
+    if(pos > 0){
+        esquerda = this->DataBase->getBMoreTree(pai.filhos[pos - 1]);
+        if(esquerda.numchaves > (ORDEM/2)){
+            this->tree = meio;
+            adicionaNaDireita(0, pai.chaves[pos - 1]);
+            meio = this->tree;
+
+            pai.chaves[pos - 1] = esquerda.chaves[esquerda.numchaves - 1];
+            int i;
+            for(i = meio.numchaves;i > 0;i--)
+                meio.filhos[i] = meio.filhos[i-1];
+            meio.filhos[0] = esquerda.filhos[esquerda.numchaves];
+
+            this->tree = esquerda;
+            delete_folha(this->tree.chaves[this->tree.numchaves - 1].id);
+            esquerda = this->tree;
+
+            this->DataBase->setBMoreTree(esquerda);//grava esquerda
+            this->tree = meio;
+            updateIndex();
+            meio = this->tree;
+            this->DataBase->setBMoreTree(meio);//grava meio
+            this->DataBase->setBMoreTree(pai);//grava pai
+
+            return 1;
+        }
+    }else if(pos <= pai.numchaves){
+        direita = this->DataBase->getBMoreTree(pai.filhos[pos + 1]);
+        if(direita.numchaves > (ORDEM/2)){
+            this->tree = meio;
+            adicionaNaDireita(this->tree.numchaves, pai.chaves[pos], -1);
+            meio = this->tree;
+
+            pai.chaves[pos] = direita.chaves[0];
+            meio.filhos[meio.numchaves] = direita.filhos[0];
+
+            int i;
+            for(i = 0;i < direita.numchaves;i++){
+                direita.filhos[i] = direita.filhos[i+1];
+            }
+            this->tree = direita;
+            delete_folha(pai.chaves[pos].id);
+            direita = this->tree;
+
+            this->DataBase->setBMoreTree(direita);//grava direita
+            this->tree = meio;
+            updateIndex();
+            meio = this->tree;
+            this->DataBase->setBMoreTree(meio);//grava meio
+            this->DataBase->setBMoreTree(pai);//grava pai
+            return 1;
+        }
+    }
+    return 0;
+}
+
+
+
+/*
+## Faz emprestimos com irmao de uma folha
+Pré-condição:   folha con underflow
+Pós-condição:   qtd minima respeitada na folha
+*/
+int BMTREE::emprestaFolha(int paiPos, int pos){
+    Bmore esquerda, pai, direita, meio;
+    bool flagEsquerda, flagDireita;
+    flagEsquerda = flagDireita = true;
+    pai = this->DataBase->getBMoreTree(paiPos);
+    meio = this->DataBase->getBMoreTree(pai.filhos[pos]);
+
+    if(pos > 0)
+        esquerda = this->DataBase->getBMoreTree(pai.filhos[pos - 1]);
+    else
+        flagEsquerda = false;
+
+    if(pos < pai.numchaves)
+        direita = this->DataBase->getBMoreTree(pai.filhos[pos + 1]);
+    else 
+        flagDireita = false;
+
+    this->tree = meio;
+
+    if(flagEsquerda && esquerda.numchaves > (ORDEM/2)){
+
+        adicionaNaDireita(0, esquerda.chaves[esquerda.numchaves - 1], -1);
+        meio = this->tree;
+        this->tree = esquerda;
+        delete_folha(esquerda.chaves[esquerda.numchaves - 1].id);
+
+        this->DataBase->setBMoreTree(this->tree);//esqueda
+        this->DataBase->setBMoreTree(meio);//meio
+        return 1;
+
+    }else if( flagDireita && direita.numchaves > (ORDEM/2)){
+        
+        adicionaNaDireita(meio.numchaves, direita.chaves[0], NULL);
+        meio = this->tree;
+        this->tree = direita;
+        delete_folha(direita.chaves[0].id);
+        
+        this->DataBase->setBMoreTree(this->tree);//direita
+        this->DataBase->setBMoreTree(meio);//meio
+        return 1;
+    }
+    return 0;
+}
+
+
+
+
+/*
+## Remove chaves que nao estejam na raiz
+Pré-condição:   no nao vazio
+Pós-condição:   nenhuma
+*/
+void BMTREE::delete_aux(int node, int key){
+    int pos;
+    this->tree = this->DataBase->getBMoreTree(node);
+    pos = newSearch(key);
+    if(eh_folha(this->tree)){
+        delete_folha(key);
+        this->DataBase->setBMoreTree(this->tree);
+    }else{
+        this->delete_aux(this->tree.filhos[pos], key);
+        this->tree = this->DataBase->getBMoreTree(node);
+        Bmore filho = this->DataBase->getBMoreTree(this->tree.filhos[pos]);
+        if(filho.numchaves < (ORDEM/2)){
+            if(eh_folha(filho)){
+                if(!emprestaFolha(this->tree.myPos, pos)){
+                    this->tree = this->DataBase->getBMoreTree(node);
+                    mergeFolha(this->tree.myPos, pos);
+                }
+            }else{                
+                if(!rotation(this->tree.myPos, pos)){
+                    this->tree = this->DataBase->getBMoreTree(node);
+                    mergeNo(this->tree.myPos, pos);
+
+                }                
+            }
+        }
+        this->tree = this->DataBase->getBMoreTree(node);
+        updateIndex();
+        this->DataBase->setBMoreTree(this->tree);
+    }
 }

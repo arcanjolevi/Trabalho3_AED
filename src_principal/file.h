@@ -159,6 +159,26 @@ public:
 	*/
 	void showHeadTree();
 
+	/*
+	## libera uma posicao
+	Pré-condição:	nenhuma
+	Pós-condição:	nenhuma
+	*/
+	void freeThisTree(int pos);
+
+	/*
+	## zera o cabeçalho do arquivo
+	Pré-condição:   nenhuma
+	Pós-condição:   nenhuma
+	*/
+	void clearAll();
+
+	/*
+	## libera uma posicao
+	Pré-condição:	nenhuma
+	Pós-condição:	nenhuma
+	*/
+	void freeThisBook(int pos);
 };
 
 #endif

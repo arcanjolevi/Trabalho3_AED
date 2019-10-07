@@ -271,3 +271,53 @@ void file::showHeadTree(){
 	cout << "Root: " << this->tree_head.root << " " << "Top: " << this->tree_head.top << " "
 	<< "Free: " << this->tree_head.free << endl;
 }
+
+
+
+
+/*
+## libera uma posicao
+Pré-condição:	nenhuma
+Pós-condição:	nenhuma
+*/
+void file::freeThisBook(int pos){
+	this->getHeadFile();
+	book aux = this->getBookData(pos);
+	aux.key = this->data_head.free;
+	this->data_head.free = pos;
+	this->setHeadFile(this->data_head);
+	this->setBookData(aux);
+}
+
+
+/*
+## libera uma posicao
+Pré-condição:	nenhuma
+Pós-condição:	nenhuma
+*/
+void file::freeThisTree(int pos){
+	this->getHeadTree();
+	Bmore aux = this->getBMoreTree(pos);
+	aux.pai = this->tree_head.free;
+	this->tree_head.free = aux.myPos;
+	this->setBMoreTree(aux);
+	this->setHeadTree(this->tree_head);	
+}
+
+/*
+## zera o cabeçalho do arquivo
+Pré-condição:   nenhuma
+Pós-condição:   nenhuma
+*/
+void file::clearAll(){
+    headtree aux = this->getHeadTree();
+    aux.root = -1;
+    aux.top = 0;
+    aux.free= -1;
+    this->setHeadTree(aux);
+
+    headfile aux2 = this->getHeadFile();
+    aux2.top = 0;
+    aux2.free = -1;
+    this->setHeadFile(aux2);
+}
